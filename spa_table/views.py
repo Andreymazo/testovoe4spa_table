@@ -31,12 +31,7 @@ class TableListView(SingleTableView):  #
         `QuerySet` in which case `QuerySet` specific behavior will be enabled.
         """
         if self.request.method == "GET":
-            # for i in range(1, 10):
-            #     values = Values_table.objects.create(
-            #         name=names.get_last_name(),
-            #         quantity=randint(1, 100),
-            #         distance=randint(1, 100),)
-            #     values.save()
+
                 if self.queryset is not None:
                     queryset = self.queryset
                     if isinstance(queryset, QuerySet):
@@ -74,22 +69,3 @@ class TableListView(SingleTableView):  #
     # print('___________2_____________')
 
 # https://faint-adasaurus-4bc.notion.site/web-Python-adf33211e9cc4d6b9ec2c0c619ecab31
-
- #
- # <style>
- #         .table-container,
- #         th,
- #         td {
- #            border: 2px solid rgb(96, 100, 218);
- #         }
- #         .table-container {
- #            width: 70vw;
- #         }
- #         body{
- #            display: grid;
- #            place-items: center;
- #         }
- #      </style>
- #   </head>
- #   <body>
- #      <table class="table-container">
