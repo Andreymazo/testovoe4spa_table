@@ -74,3 +74,22 @@ class TableListView(SingleTableView):  #
     # print('___________2_____________')
 
 # https://faint-adasaurus-4bc.notion.site/web-Python-adf33211e9cc4d6b9ec2c0c619ecab31
+
+ #
+ # <style>
+ #         .table-container,
+ #         th,
+ #         td {
+ #            border: 2px solid rgb(96, 100, 218);
+ #         }
+ #         .table-container {
+ #            width: 70vw;
+ #         }
+ #         body{
+ #            display: grid;
+ #            place-items: center;
+ #         }
+ #      </style>
+ #   </head>
+ #   <body>
+ #      <table class="table-container">
