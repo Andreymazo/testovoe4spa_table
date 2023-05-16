@@ -1,15 +1,65 @@
-<!DOCTYPE html>
-<html lang="en">
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<style type="text/css">
+ table.center {
+    margin-left: auto;
+    margin-right: auto;
+}
+</style>
+<title>Table with css</title>
+</head>
+<body>
+<table class="center">
 
 
 {% load render_table from django_tables2 %}
 
 <html>
+
     <head>
         <title>List of values</title>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
     </head>
+
     <body>
+
         {% render_table table %}
+
+                <div class="mt-md-5">
+        <div class="pl-sm-5">
+            <div class="pr-sm-5">
+                <h3 align="center">Welcome</h3>
+                <br>
+                <hr>
+                <form method="GET">
+                    {% csrf_token %}
+                    <table>
+                        {{ form.as_table }}
+                    </table>
+                    <button type="submit" class="btn btn-success">Refresh Table</button>
+                </form>
+                <br>
+                <hr>
+                <p></p>
+                <br>
+                <hr>
+                {% for x in range %}
+                {{ Number }} x {{x}} = {% widthratio Number 1 x %} <br>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
     </body>
 </html>
