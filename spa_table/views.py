@@ -30,9 +30,6 @@ class TableListView(SingleTableView):  #
         The return value must be an iterable and may be an instance of
         `QuerySet` in which case `QuerySet` specific behavior will be enabled.
         """
-
-
-        global queryset
         if self.request.method == "GET":
             # for i in range(1, 10):
             #     values = Values_table.objects.create(
