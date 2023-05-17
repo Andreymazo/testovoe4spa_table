@@ -1,6 +1,6 @@
 from django.urls import path
 
-from spa_table.views import TableListView, render_api_question, Values_tableListView
+from spa_table.views import TableListView, render_api_question#, Values_tableListView
 
 urlpatterns = [
                path('', TableListView.as_view(), name='Values_table_list'),
