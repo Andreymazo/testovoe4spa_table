@@ -76,8 +76,6 @@ def render_api_question(request):
     )
     if response.status_code == 200:
         a = response.json()
-        print('aaaaaaaaaaaaaaaaaa', a[0].get('answer'))#aaaaaaaaaaaaaaaaaa [{'id': 170651, 'answer': 'Clara Barton', 'question': 'Pre-Red Cross in 1865, she set up a Bureau of Records to help search for missing soldiers', 'value': 800, 'airdate': '2015-01-09T20:00:00.000Z', 'created_at': '2022-12-30T21:04:22.067Z', 'updated_at': '2022-12-30T21:04:22.067Z', 'category_id': 20843, 'game_id': 4778, 'invalid_count': None, 'category': {'id': 20843, 'title': "this one's for the ladies", 'created_at': '2022-12-30T21:04:20.503Z', 'updated_at': '2022-12-30T21:04:20.503Z', 'clues_count': 5}}]
-# [17/May/2023 06:46:20] "GET /home?page=7 HTTP/1.1" 200 16461
         values = Question.objects.create(
             body=a[0].get('question'),
             answer=a[0].get('answer'),
@@ -87,9 +85,6 @@ def render_api_question(request):
     else:
         print('An error has occurred.')
     return render(request, 'spa_table/home.html', queryset)
-
-
-
 
 
 class Values_tableListView(ListView):
