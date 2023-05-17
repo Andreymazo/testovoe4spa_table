@@ -11,4 +11,5 @@ https://faint-adasaurus-4bc.notion.site/web-Python-adf33211e9cc4d6b9ec2c0c619eca
 https://docs.google.com/document/d/1Xw4L-_riLixQFA127Uyvoq3JNrJm6hgSr7c7ux6z_fY/edit#
 надо забирать вопрос с сайта https://jservice.io/api/random?count=1 и заносить в базу
 реализовано на эндпоинте home во вьюхе функция render_api_question
-(надо немного допилить и обернуть докером)
+из темплейта можно сразу несколько вопросов добавлять плюс проверка на уникальность
+(осталось обернуть докером)
