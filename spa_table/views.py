@@ -87,12 +87,9 @@ def render_api_question(request):
     return render(request, 'spa_table/home.html', queryset)
 
 
-class Values_tableListView(ListView):
-    model = Values_table
-    template_name = 'spa_table/home.html'
+# class Values_tableListView(ListView):
+#     model = Values_table
+#     template_name = 'spa_table/home.html'
 
-    # print('___________1_____________')
-
-    # print('___________2_____________')
 
 # https://faint-adasaurus-4bc.notion.site/web-Python-adf33211e9cc4d6b9ec2c0c619ecab31
