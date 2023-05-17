@@ -6,13 +6,23 @@
         <title>List of something</title>
     </head>
     <body>
-        {% render_table object_list %}
-    <form method="GET">
+         <form method="POST" enctype="application/x-www-form-urlencoded">
                         {% csrf_token %}
                         <table>
                             {{ form.as_table }}
                         </table>
-                        <button type="submit" class="btn btn-success">Get question</button>
+             <label for="number">Number of questions: </label>
+             {{ number_form.number.label_tag }}
+            {{ number_form.number }}
+            {{ number_form.number.errors }}
+
+
+                <input type="submit" class="btn btn-success" value="Get question">
+
+
                     </form>
+
+     {% render_table object_list %}
+
     </body>
 </html>
