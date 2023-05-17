@@ -15,3 +15,16 @@ class Values_table(models.Model):
 class Values_tableTable(tables.Table):
     class Meta:
         model = Values_table
+
+
+class Question(models.Model):
+    body = models.CharField(max_length=200, verbose_name='Название вопроса')
+    answer = models.CharField(max_length=100, verbose_name='Ответ')
+    question_value = models.IntegerField(validators=[MaxValueValidator(1500), MinValueValidator(0)],
+                                         verbose_name='Количество баллов за вопрос')
+    created = models.TimeField(auto_now_add=True)
+
+
+class QuestionTable(tables.Table):
+    class Meta:
+        model = Question
