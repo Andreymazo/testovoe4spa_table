@@ -6,6 +6,8 @@
         <title>List of something</title>
     </head>
     <body>
+
+      {% include 'spa_table/includes/main_menu.html' %}
          <form method="POST" enctype="application/x-www-form-urlencoded">
                         {% csrf_token %}
                         <table>

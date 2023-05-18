@@ -13,3 +13,6 @@ https://docs.google.com/document/d/1Xw4L-_riLixQFA127Uyvoq3JNrJm6hgSr7c7ux6z_fY/
 реализовано на эндпоинте home во вьюхе функция render_api_question
 из темплейта можно сразу несколько вопросов добавлять плюс проверка на уникальность
 (осталось обернуть докером)
+############Email to send this task
+# hr@bewise.ai
+#######################################3
