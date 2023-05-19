@@ -8,11 +8,11 @@
       <jdbc-url>jdbc:postgresql://localhost:5432/postgres</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
-    <data-source source="LOCAL" name="spa_table@localhost" uuid="97fb74ee-1b34-4bbc-a8b6-610299f2b5da">
+    <data-source source="LOCAL" name="spa_tabl@localhost" uuid="a44f0873-253a-4faa-a604-9b192e1864f8">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://localhost:5432/spa_table</jdbc-url>
+      <jdbc-url>jdbc:postgresql://localhost:5432/spa_tabl</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

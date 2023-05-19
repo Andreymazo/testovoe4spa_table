@@ -28,12 +28,14 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
-REGISTER_REDIRECT = 'spa_table:tz1'
-LOGIN_REDIRECT_URL = 'spa_table:tz1'
-LOGOUT_REDIRECT_URL = 'spa_table:tz1'
-LOGIN_URL = '/api-auth/login/'
-
-SIMPLE_BACKEND_REDIRECT_URL = 'spa_table:tz1'
+AUTHENTICATION_BACKENDS = [
+    'allauth.account.auth_backends.AuthenticationBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+LOGIN_REDIRECT_URL = 'tz2/'
+LOGOUT_REDIRECT_URL = 'spa_table:tz2'
+LOGIN_URL = 'login/'#http://localhost:8000/login
+SIMPLE_BACKEND_REDIRECT_URL = 'spa_table:tz2'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -102,14 +104,17 @@ REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+        # 'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
-    ]
+        # 'rest_framework.authentication.TokenAuthentication',
+
+    ],
 }
+
+
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
@@ -165,5 +170,5 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
+AUTH_USER_MODEL = 'spa_table.CustomUser'
 
