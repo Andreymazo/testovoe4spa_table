@@ -6,7 +6,9 @@ import requests
 import names
 from allauth.account import app_settings
 from allauth.account.utils import complete_signup
+from django.contrib import messages
 from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth.views import LoginView, PasswordResetView
 
 from django.core.exceptions import ImproperlyConfigured
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -14,7 +16,7 @@ from django.db.models import QuerySet
 from django.http import HttpResponseRedirect, HttpResponse, request, JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
-from django.views.generic import ListView
+from django.views.generic import ListView, CreateView
 from django_tables2 import SingleTableView
 from rest_auth.app_settings import create_token, TokenSerializer, LoginSerializer
 from rest_auth.models import TokenModel
@@ -30,6 +32,7 @@ from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 
 from config.settings import SECRET_KEY
+from spa_table.forms import SigninForm, SignupForm, CustomPasswordResetForm, RegisterForm
 from spa_table.models import Question, Values_table, Values_tableTable, \
     CustomUser  # CustomUser, Values_tableTable, Values_table,
 from random import randint
@@ -49,8 +52,10 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.authentication import BaseAuthentication
 
+from spa_table.templates.spa_table.service import set_verify_token_and_send_mail
 
-class CustomAuthToken(ObtainAuthToken):## Без этой функции ДРФ не работает
+
+class CustomAuthToken(ObtainAuthToken):  ## Без этой функции ДРФ не работает
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data,
@@ -72,131 +77,197 @@ from django.contrib.auth import (
 from django.utils.translation import ugettext_lazy as _
 
 
-class LoginView(GenericAPIView):
-    """
-    Check the credentials and return the REST Token
-    if the credentials are valid and authenticated.
-    Calls Django Auth login method to register User ID
-    in Django session framework
+class SigninView():
+    pass
 
-    Accept the following POST parameters: username, password
-    Return the REST Framework Token Object's key.
-    """
-    permission_classes = (AllowAny,)
-    serializer_class = LoginSerializer
-    token_model = TokenModel
-    template_name = 'spa_table/login.html'
-    # https: // www.django - rest - framework.org / api - guide / reverse /
-    @sensitive_post_parameters_m
-    def dispatch(self, *args, **kwargs):
 
-        return super(LoginView, self).dispatch(*args, **kwargs)
+from django.contrib.auth import authenticate, login
 
-    def process_login(self):
-        django_login(self.request, self.user)
 
-    def get_response_serializer(self):
-        if getattr(settings, 'REST_USE_JWT', False):
-            response_serializer = JWTSerializer
+class CustomUserLogin(LoginView):
+    template_name = 'spa_table/registration/login.html'
+    form_class = SigninForm
+
+
+class SignupView(CreateView):
+    template_name = 'spa_table/registration/register.html'
+    model = CustomUser
+    form_class = SignupForm
+    success_url = reverse_lazy('spa_table:register_success')
+
+    def form_valid(self, form):
+        print('___________________________')
+        if form.is_valid():
+            self.object = form.save()
+            set_verify_token_and_send_mail(self.object)
+        return super().form_valid(form)
+
+
+def sign_up(request):
+    if request.method == 'GET':
+        form = RegisterForm()
+        return render(request, 'spa_table/registration/register.html', {'form': form})
+
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.username = user.username.lower()
+            user.save()
+            messages.success(request, 'You have singed up successfully.')
+            login(request, user,  backend='django.contrib.auth.backends.ModelBackend')
+            return redirect('spa_table:tz2')
         else:
-            response_serializer = TokenSerializer
-        return response_serializer
-
-    def login(self):
-        self.user = self.serializer.validated_data['user']
-
-        if getattr(settings, 'REST_USE_JWT', False):
-            #########################################
-            # self.token = jwt_encode(self.user)
-            print('0000000000000000000000000000000', self.user)
-            self.token = jwt_encode(self.user)
-
-        else:
-            self.token = create_token(self.token_model, self.user,
-                                      self.serializer)
-
-        if getattr(settings, 'REST_SESSION_LOGIN', True):
-            self.process_login()
-
-    def get_response(self):
-        serializer_class = self.get_response_serializer()
-
-        if getattr(settings, 'REST_USE_JWT', False):
-            print('___________1___________')
-            data = {
-                'user': self.user,
-                'token': self.token,
-                'tz2': reverse('tz2', request=request)
-                # reverse("news-year-archive", args=(year,)))
-            }
-            serializer = serializer_class(instance=data,
-                                          context={'request': self.request})
-        else:
-            serializer = serializer_class(instance=self.token,
-                                          context={'request': self.request})
-
-        print('__________2____________', serializer.data)#__________2____________ {'key': '0bb908a04d33dea15f237497478dd408a3afd81c'}
+            return render(request, 'spa_table/registration/register.html', {'form': form})
 
 
-        response = Response(serializer.data, status=status.HTTP_200_OK)
-        # if getattr(settings, 'REST_USE_JWT', False):
-        #     from rest_framework_jwt.settings import api_settings as jwt_settings
-        #     if jwt_settings.JWT_AUTH_COOKIE:
-        #         from datetime import datetime
-        #         expiration = (datetime.utcnow() + jwt_settings.JWT_EXPIRATION_DELTA)
-        #         response.set_cookie(jwt_settings.JWT_AUTH_COOKIE,
-        #                             self.token,
-        #                             expires=expiration,
-        #                             httponly=True)
-        return response
+class CustomPasswordResetView(PasswordResetView):
+    template_name = 'users/password_reset_form.html'
+    form_class = CustomPasswordResetForm
+    success_url = reverse_lazy('users:password_reset_done')
+    email_template_name = 'users/email_reset.html'
+    from_email = settings.EMAIL_HOST_USER
 
-    def post(self, request, *args, **kwargs):
-        # redirect_url = request.GET.get('redirect_url')
 
-        self.request = request
-        print('___________3___________', self.request.data)#____________3___________ <QueryDict: {'csrfmiddlewaretoken': ['4g5QcEnpoTviPeE1VPzdms57M4UMEGey1AxmCe7KVAkZYXWyzoyaFKZeKqYWXzQJ'], 'username': ['andr344eymazo33'], 'email': ['q21w@qw.ru'], 'password': ['qwert123asd']}>
+# def my_view(request):
+#     username = request.POST.get("username")
+#     password = request.POST.get("password")
+#     user = authenticate(request, username=username, password=password)
+#
+#     if user is not None:
+#         login(request, user)
+#         return HttpResponse(
+#                     redirect=redirect('spa_table:tz2'),)
+#     else:
+#         print('Error message')
 
-        self.serializer = self.get_serializer(data=self.request.data,
-                                              context={'request': request},
-                                              )
-        self.serializer.is_valid(raise_exception=True)
 
-        self.login()
-        return self.get_response()
-
-# class LoginView(APIView):
+# class LoginView(GenericAPIView):
+#     """
+#     Check the credentials and return the REST Token
+#     if the credentials are valid and authenticated.
+#     Calls Django Auth login method to register User ID
+#     in Django session framework
+#
+#     Accept the following POST parameters: username, password
+#     Return the REST Framework Token Object's key.
+#     """
 #     permission_classes = (AllowAny,)
-
-    # def post(self, request, *args, **kwargs):
-    #     username = request.data['username']
-    #     password = request.data['password']
-    #
-    #     user = authenticate(username=username, password=password)
-    #
-    #     if user is not None:
-    #         payload = {
-    #             'user_id': user.id,
-    #             'exp': datetime.now(),
-    #             'token_type': 'access'
-    #         }
-    #
-    #         user = {
-    #             'user': username,
-    #             'email': user.email,
-    #             'time': datetime.now().time(),
-    #             'userType': 10
-    #         }
-    #
-    #         token = jwt.encode(payload, SECRET_KEY).decode('utf-8')
-    #         return JsonResponse({'success': 'true', 'token': token, 'user': user})
-    #
-    #     else:
-    #         return JsonResponse({'success': 'false', 'msg': 'The credentials provided are invalid.'})
+#     serializer_class = LoginSerializer
+#     token_model = TokenModel
+#     template_name = 'spa_table/login.html'
+#     # https: // www.django - rest - framework.org / api - guide / reverse /
+#     @sensitive_post_parameters_m
+#     def dispatch(self, *args, **kwargs):
+#
+#         return super(LoginView, self).dispatch(*args, **kwargs)
+#
+#     def process_login(self):
+#         django_login(self.request, self.user)
+#
+#     def get_response_serializer(self):
+#         if getattr(settings, 'REST_USE_JWT', False):
+#             response_serializer = JWTSerializer
+#         else:
+#             response_serializer = TokenSerializer
+#         return response_serializer
+#
+#     def login(self):
+#         self.user = self.serializer.validated_data['user']
+#
+#         if getattr(settings, 'REST_USE_JWT', False):
+#             #########################################
+#             # self.token = jwt_encode(self.user)
+#             print('0000000000000000000000000000000', self.user)
+#             self.token = jwt_encode(self.user)
+#
+#         else:
+#             self.token = create_token(self.token_model, self.user,
+#                                       self.serializer)
+#
+#         if getattr(settings, 'REST_SESSION_LOGIN', True):
+#             self.process_login()
+#
+#     def get_response(self):
+#         serializer_class = self.get_response_serializer()
+#
+#         if getattr(settings, 'REST_USE_JWT', False):
+#             print('___________1___________')
+#             data = {
+#                 'user': self.user,
+#                 'token': self.token,
+#                 'tz2': reverse('tz2', request=request)
+#                 # reverse("news-year-archive", args=(year,)))
+#             }
+#             serializer = serializer_class(instance=data,
+#                                           context={'request': self.request})
+#         else:
+#             serializer = serializer_class(instance=self.token,
+#                                           context={'request': self.request})
+#
+#         print('__________2____________', serializer.data)#__________2____________ {'key': '0bb908a04d33dea15f237497478dd408a3afd81c'}
+#
+#
+#         response = Response(serializer.data, status=status.HTTP_200_OK)
+#         # if getattr(settings, 'REST_USE_JWT', False):
+#         #     from rest_framework_jwt.settings import api_settings as jwt_settings
+#         #     if jwt_settings.JWT_AUTH_COOKIE:
+#         #         from datetime import datetime
+#         #         expiration = (datetime.utcnow() + jwt_settings.JWT_EXPIRATION_DELTA)
+#         #         response.set_cookie(jwt_settings.JWT_AUTH_COOKIE,
+#         #                             self.token,
+#         #                             expires=expiration,
+#         #                             httponly=True)
+#         return response
+#
+#     def post(self, request, *args, **kwargs):
+#         # redirect_url = request.GET.get('redirect_url')
+#
+#         self.request = request
+#         print('___________3___________', self.request.data)#____________3___________ <QueryDict: {'csrfmiddlewaretoken': ['4g5QcEnpoTviPeE1VPzdms57M4UMEGey1AxmCe7KVAkZYXWyzoyaFKZeKqYWXzQJ'], 'username': ['andr344eymazo33'], 'email': ['q21w@qw.ru'], 'password': ['qwert123asd']}>
+#
+#         self.serializer = self.get_serializer(data=self.request.data,
+#                                               context={'request': request},
+#                                               )
+#         self.serializer.is_valid(raise_exception=True)
+#
+#         self.login()
+#         return self.get_response()
+#
+# # class LoginView(APIView):
+# #     permission_classes = (AllowAny,)
+#
+#     # def post(self, request, *args, **kwargs):
+#     #     username = request.data['username']
+#     #     password = request.data['password']
+#     #
+#     #     user = authenticate(username=username, password=password)
+#     #
+#     #     if user is not None:
+#     #         payload = {
+#     #             'user_id': user.id,
+#     #             'exp': datetime.now(),
+#     #             'token_type': 'access'
+#     #         }
+#     #
+#     #         user = {
+#     #             'user': username,
+#     #             'email': user.email,
+#     #             'time': datetime.now().time(),
+#     #             'userType': 10
+#     #         }
+#     #
+#     #         token = jwt.encode(payload, SECRET_KEY).decode('utf-8')
+#     #         return JsonResponse({'success': 'true', 'token': token, 'user': user})
+#     #
+#     #     else:
+#     #         return JsonResponse({'success': 'false', 'msg': 'The credentials provided are invalid.'})
 
 class RregisterView(CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = register_permission_classes()
     token_model = TokenModel
+
     # template_name = 'spa_table/login.html'
 
     @sensitive_post_parameters_m
@@ -263,13 +334,7 @@ class RregisterView(CreateAPIView):
                         app_settings.EMAIL_VERIFICATION,
                         None)
         return user
-
-
-#######################################################################3
-
-class TableListView(SingleTableView):
-    model = Values_table
-    table_class = Values_tableTable
+def generate_values():
     for i in range(1, 10):
         values = Values_table.objects.create(
             name=names.get_last_name(),
@@ -277,9 +342,13 @@ class TableListView(SingleTableView):
             distance=randint(1, 100),
         )
         values.save()
-    print('___________2_____________')
+        queryset = Values_table.objects.all()
+        return queryset
 
-    queryset = Values_table.objects.all()
+class TableListView(SingleTableView):
+    model = Values_table
+    table_class = Values_tableTable
+    generate_values()
     template_name = "spa_table/Values_table_list.html"
     ordering = ('distance',)  # quantity, name
     table_pagination = {"per_page": 5}
@@ -426,7 +495,6 @@ def proverka_unik(a: str):
 # https://faint-adasaurus-4bc.notion.site/web-Python-adf33211e9cc4d6b9ec2c0c619ecab31
 
 def tz3(request):
-
     number_form = NumberQuestion(request.POST)
     queryset = {'object_list': CustomUser.objects.all,
                 'number_form': number_form}

@@ -1,0 +1,17 @@
+{% extends 'users/base.html' %}
+
+{% block content %}
+
+    <p>
+        Поражены вашей неудачей :(
+    </p>
+    <a href="{% url 'boat:list' %}" class="btn btn-link">
+        На главную
+    </a> или
+    <a href="{% url 'users:register' %}" class="btn btn-link">
+        Попробовать еще раз
+    </a>
+    ну или
+    <a href="mailto:support@bube7.com">Напишите в саппорт</a>
+
+{% endblock %}

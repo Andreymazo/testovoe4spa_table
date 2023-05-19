@@ -1,0 +1,19 @@
+{% extends 'spa_table/registration/base.html' %}
+
+{% block content %}
+    <style type="text/css">
+             body{
+                display: grid;
+                place-items: center;
+             }
+    </style>
+{% include 'spa_table/includes/main_menu.html' %}
+    <form method="post">
+        {% csrf_token %}
+        <h1 class="h3 mb-3 fw-normal">Зарегистрируйтесь</h1>
+        {{ form.as_p }}
+        <button class="w-100 btn btn-lg btn-primary" type="submit">Регистрация</button>
+        <a class="btn btn-link" href="{% url 'spa_table:login' %}">Есть аккаунт?</a>
+    </form>
+
+{% endblock %}

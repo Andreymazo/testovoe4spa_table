@@ -41,7 +41,7 @@ from django.contrib.auth.models import PermissionsMixin
 
 
 # https://ilovedjango.com/django/authentication/custom-user-model-in-django/
-class CustomUser(AbstractBaseUser):  # , PermissionsMixin):
+class CustomUser(AbstractBaseUser, PermissionsMixin):  # ):
     uuid = models.UUIDField(
         unique=True, default=uuid.uuid4, editable=False
     )
@@ -55,10 +55,10 @@ class CustomUser(AbstractBaseUser):  # , PermissionsMixin):
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
 
-    created_by = models.ForeignKey('CustomUser',
-                                   null=True, blank=True,
-                                   on_delete=models.CASCADE,
-                                   related_name="custom_users")
+    # created_by = models.ForeignKey('CustomUser',
+    #                                null=True, blank=True,
+    #                                on_delete=models.CASCADE,
+    #                                related_name="custom_users")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_URL = os.getenv('BASE_URL')
 
 env_path = BASE_DIR / '.env'
 load_dotenv(dotenv_path=env_path)
@@ -32,7 +33,7 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
-LOGIN_REDIRECT_URL = 'tz2/'
+LOGIN_REDIRECT_URL = '/tz2/'
 LOGOUT_REDIRECT_URL = 'spa_table:tz2'
 LOGIN_URL = 'login/'#http://localhost:8000/login
 SIMPLE_BACKEND_REDIRECT_URL = 'spa_table:tz2'
