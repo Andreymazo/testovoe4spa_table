@@ -1,7 +1,10 @@
+import os
+import token
 from datetime import datetime
 
 import allauth
 import jwt
+import pydub
 import requests
 import names
 from allauth.account import app_settings
@@ -25,6 +28,7 @@ from rest_auth.registration.views import sensitive_post_parameters_m
 from rest_auth.serializers import JWTSerializer
 from rest_auth.utils import jwt_encode
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.generics import CreateAPIView, GenericAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -32,7 +36,7 @@ from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 
 from config.settings import SECRET_KEY
-from spa_table.forms import SigninForm, SignupForm, CustomPasswordResetForm, RegisterForm
+from spa_table.forms import SigninForm, SignupForm, CustomPasswordResetForm, RegisterForm, CustomUserForm
 from spa_table.models import Question, Values_table, Values_tableTable, \
     CustomUser  # CustomUser, Values_tableTable, Values_table,
 from random import randint
@@ -52,6 +56,8 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.authentication import BaseAuthentication
 
+from spa_table.serializers import SignupSerializer
+from spa_table.service import generate_access_token
 from spa_table.templates.spa_table.service import set_verify_token_and_send_mail
 
 
@@ -87,7 +93,16 @@ from django.contrib.auth import authenticate, login
 class CustomUserLogin(LoginView):
     template_name = 'spa_table/registration/login.html'
     form_class = SigninForm
+    # def get_context_data(self, **kwargs):
+    #     context = super(CustomUserLogin, self).get_context_data(self, **kwargs)
+    #     token_exist = CustomUser.objects.get(self, **kwargs)
+    #
+    #     context.update({'token'})
+    #     if CustomUser.token
 
+
+# <a class="btn btn-link" href="{% url 'spa_table:password_reset' %}">Забыли пароль?</a>
+#                <br>
 
 class SignupView(CreateView):
     template_name = 'spa_table/registration/register.html'
@@ -103,30 +118,60 @@ class SignupView(CreateView):
         return super().form_valid(form)
 
 
+def handle_uploaded_file(f):
+    with open('media / musics/' + f.name, 'wb+') as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
+
+
 def sign_up(request):
     if request.method == 'GET':
         form = RegisterForm()
         return render(request, 'spa_table/registration/register.html', {'form': form})
-
+    # qwert123asd
     if request.method == 'POST':
-        form = RegisterForm(request.POST)
+        form = RegisterForm(request.POST, request.FILES)
+        # form = CustomUserForm(request.POST, request.FILES)
         if form.is_valid():
+            # print('iiiiiiiiiiiiiiiiiiiiiiiii')
             user = form.save(commit=False)
             user.username = user.username.lower()
+            user.token = generate_access_token(user)
             user.save()
             messages.success(request, 'You have singed up successfully.')
-            login(request, user,  backend='django.contrib.auth.backends.ModelBackend')
+            login(request, user, backend='allauth.account.auth_backends.AuthenticationBackend')
             return redirect('spa_table:tz2')
         else:
             return render(request, 'spa_table/registration/register.html', {'form': form})
 
 
-class CustomPasswordResetView(PasswordResetView):
-    template_name = 'users/password_reset_form.html'
-    form_class = CustomPasswordResetForm
-    success_url = reverse_lazy('users:password_reset_done')
-    email_template_name = 'users/email_reset.html'
-    from_email = settings.EMAIL_HOST_USER
+# https://fahimirfan70.medium.com/user-creation-using-django-abstractbaseuser-and-login-using-jwt-web-authentication-5d9fbfdd14ed
+# PyJWT==2.7.0
+class SignupAPIView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+        password = request.POST.get('password', None)
+        confirm_password = request.POST.get('confirm_password', None)
+        if password == confirm_password:
+            serializer = SignupSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            data = serializer.data
+            response = status.HTTP_201_CREATED
+        else:
+            data = ''
+            raise ValidationError(
+                {'password_mismatch': 'Password fields didn not match.'})
+        return Response(data, status=response)
+
+
+# class CustomPasswordResetView(PasswordResetView):
+#     template_name = 'users/password_reset_form.html'
+#     form_class = CustomPasswordResetForm
+#     success_url = reverse_lazy('users:password_reset_done')
+#     email_template_name = 'users/email_reset.html'
+#     from_email = settings.EMAIL_HOST_USER
 
 
 # def my_view(request):
@@ -334,6 +379,8 @@ class RregisterView(CreateAPIView):
                         app_settings.EMAIL_VERIFICATION,
                         None)
         return user
+
+
 def generate_values():
     for i in range(1, 10):
         values = Values_table.objects.create(
@@ -344,6 +391,7 @@ def generate_values():
         values.save()
         queryset = Values_table.objects.all()
         return queryset
+
 
 class TableListView(SingleTableView):
     model = Values_table
@@ -429,7 +477,7 @@ def render_api_question(request):
             number_form = NumberQuestion()
             # print('An error has occurred.')
 
-    return render(request, 'spa_table/home.html', queryset)
+    return render(request, 'spa_table/users.html', queryset)
 
 
 # def render_api_question(request):
@@ -458,8 +506,8 @@ def render_api_question(request):
 #
 #         else:
 #             print('An error has occurred.')
-#         return render(request, 'spa_table/home.html', queryset)
-#     return render(request, 'spa_table/home.html', queryset)
+#         return render(request, 'spa_table/users.html', queryset)
+#     return render(request, 'spa_table/users.html', queryset)
 # <form action="/login/" method="POST">
 #   <input type="text" name="keyword" placeholder="Search query">
 #   <input type="number" name="results" placeholder="Number of results">
@@ -488,15 +536,87 @@ def proverka_unik(a: str):
 
 # class Values_tableListView(ListView):
 #     model = Values_table
-#     template_name = 'spa_table/home.html'
+#     template_name = 'spa_table/users.html'
 
 # <input type="number" value="{{number}}"  placeholder="Number of questions">
 
 # https://faint-adasaurus-4bc.notion.site/web-Python-adf33211e9cc4d6b9ec2c0c619ecab31
 
-def tz3(request):
+def tz3_users(request):
     number_form = NumberQuestion(request.POST)
     queryset = {'object_list': CustomUser.objects.all,
                 'number_form': number_form}
 
-    return render(request, 'spa_table/home.html', queryset)
+    return render(request, 'spa_table/users.html', queryset)
+
+
+from pydub import AudioSegment
+
+
+def change_audio(request):
+    filepath1 = f'media/{request.user.file_wav}'
+    filepath2 = f'media/{request.user.pk}.mp3'
+
+
+    queryset = {'object_list': CustomUser.objects.all}
+    if request.user.is_authenticated:
+        if request.user.file_wav:
+            if str(request.user.file_wav).endswith('.wav') is True:
+                print('66666666666666666666666666', request.user.file_wav)
+                print('55555555555555555555555555', request.user.file_mp3)
+                # AudioSegment.from_wav(os.path.basename(request.user.file_wav)).export(os.path.basename(request.user.file_mp3),
+                #                                                                format="mp3")
+                print('ttttttttttttttttttttttttttt', filepath1, filepath2) # media/musics/sample-3s.wav
+                # AudioSegment.from_wav(f'{filepath1}').export(f'{filepath2}', format="mp3")
+                sound = pydub.AudioSegment.from_wav(filepath1)
+                # value = CustomUser.objects.create(
+                #
+                # )
+                request.user.file_mp3 = sound.export(filepath2, format="mp3")
+                request.user.file_mp3
+                # if os.path.isfile(filepath1) and os.path.isfile(filepath2):
+                #     AudioSegment.from_wav('filepath1').export('filepath2', format="mp3")
+                # else:
+                #     print(f"{filepath1} is not a file.")
+                # try:
+                #     AudioSegment.from_wav(filepath1).export(filepath2, format="mp3")
+                #
+                # except IsADirectoryError:
+                #     print(f"{filepath3} is a directory, not a file.")
+                # except IsADirectoryError:
+                #     print(f"{filepath2} is a directory, not a file.")
+
+
+
+                # if os.path.isfile(filepath1):
+                #     AudioSegment.from_wav(filepath1).export(filepath2, format="mp3")
+                #
+                #
+                # else:
+                #     print(f"{filepath1} is not a file.")
+                # AudioSegment.from_wav(f'media/{request.user.file_wav}').export(f'media/{request.user.file_mp3}', format="mp3")
+                print('[[[[[[[[[[[[[[[[[[[[[[', request.user.file_mp3)
+            print('Загрузите аудиофайл формата wav')
+        return render(request, 'spa_table/users.html', queryset)
+    return redirect('spa_table:login')  # print('Get auth')
+    # if request.method == 'POST':
+
+# AudioSegment.from_wav("/input/file.wav").export("/output/file.mp3", format="mp3")
+# def generate_values():
+#     for i in range(1, 10):
+#         values = Values_table.objects.create(
+#             name=names.get_last_name(),
+#             quantity=randint(1, 100),
+#             distance=randint(1, 100),
+#         )
+#         values.save()
+#         queryset = Values_table.objects.all()
+#         return queryset
+
+
+# Добавление аудиозаписи, POST:
+# Принимает на вход запросы, содержащие уникальный идентификатор пользователя, токен доступа и аудиозапись в формате wav;
+# Преобразует аудиозапись в формат mp3, генерирует для неё уникальный UUID идентификатор и сохраняет их в базе данных;
+# Возвращает URL для скачивания записи вида http://host:port/record?id=id_записи&user=id_пользователя.
+# Доступ к аудиозаписи, GET:
+# Предоставляет возможность скачать аудиозапись по ссылке из п 2.2.3.

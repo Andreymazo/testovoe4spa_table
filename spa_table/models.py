@@ -45,6 +45,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):  # ):
     uuid = models.UUIDField(
         unique=True, default=uuid.uuid4, editable=False
     )
+
     email = models.EmailField(max_length=255, unique=True)
     username = models.CharField(max_length=50,
                                 unique=True)
@@ -54,7 +55,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):  # ):
     is_admin = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
+    token = models.CharField(null=True, blank=True, max_length=150)
+    file_wav = models.FileField(upload_to='musics', **NULLABLE)
+    file_mp3 = models.FileField(upload_to='musics', **NULLABLE)
 
+#<audio src="{{ song.file.url }}" autoplay></audio>
     # created_by = models.ForeignKey('CustomUser',
     #                                null=True, blank=True,
     #                                on_delete=models.CASCADE,

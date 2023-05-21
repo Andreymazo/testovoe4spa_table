@@ -33,7 +33,6 @@ class SigninForm(StyleFormMixin, AuthenticationForm):
 
 
 class SignupForm(StyleFormMixin, UserCreationForm):
-
     class Meta:
         model = CustomUser
         fields = ("email",)
@@ -47,9 +46,30 @@ class CustomPasswordResetForm(StyleFormMixin, PasswordResetForm):
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=65)
     password = forms.CharField(max_length=65, widget=forms.PasswordInput)
+    # file_wave = forms.FileField()
 
 
 class RegisterForm(UserCreationForm):
+    # geeks_field = forms.FileField()
+    # file_wave = forms.FileField()
+
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'password1', 'password2']
+        fields = ['username', 'email', 'password1', 'password2', 'file_wav']
+
+
+class CustomUserForm(forms.Form):
+    file_wav = forms.FileField()
+    username = forms.CharField()
+    email = forms.EmailField()
+    password1 = forms.CharField()
+    password2 = forms.CharField()
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data["password1"])
+        if commit:
+            user.save()
+        return user
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'email', 'password1', 'password2', 'file_wav']
