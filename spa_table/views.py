@@ -1,6 +1,7 @@
 import os
 import token
 from datetime import datetime
+from pathlib import Path
 
 import allauth
 import jwt
@@ -14,12 +15,13 @@ from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.views import LoginView, PasswordResetView
 
 from django.core.exceptions import ImproperlyConfigured
+from django.core.files import File
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models import QuerySet
 from django.http import HttpResponseRedirect, HttpResponse, request, JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView
+from django.views.generic import ListView, CreateView, UpdateView
 from django_tables2 import SingleTableView
 from rest_auth.app_settings import create_token, TokenSerializer, LoginSerializer
 from rest_auth.models import TokenModel
@@ -553,11 +555,14 @@ def tz3_users(request):
 from pydub import AudioSegment
 
 
+class UpdateCustomUser(UpdateView):
+    model = CustomUser
+    pass
+
+# https://stacktuts.com/how-to-replace-overwrite-update-change-a-file-of-filefield-in-django
 def change_audio(request):
     filepath1 = f'media/{request.user.file_wav}'
     filepath2 = f'media/{request.user.pk}.mp3'
-
-
     queryset = {'object_list': CustomUser.objects.all}
     if request.user.is_authenticated:
         if request.user.file_wav:
@@ -566,38 +571,135 @@ def change_audio(request):
                 print('55555555555555555555555555', request.user.file_mp3)
                 # AudioSegment.from_wav(os.path.basename(request.user.file_wav)).export(os.path.basename(request.user.file_mp3),
                 #                                                                format="mp3")
-                print('ttttttttttttttttttttttttttt', filepath1, filepath2) # media/musics/sample-3s.wav
+                print('ttttttttttttttttttttttttttt', filepath1, filepath2)  # media/musics/sample-3s.wav
                 # AudioSegment.from_wav(f'{filepath1}').export(f'{filepath2}', format="mp3")
-                sound = pydub.AudioSegment.from_wav(filepath1)
-                # value = CustomUser.objects.create(
+                # form = CustomUserForm(request.POST, request.FILES or None, )
+                t = CustomUser.objects.get(pk=request.user.pk)
+
+                sound = pydub.AudioSegment.from_file(filepath1)
+                sound.export(filepath2, format="mp3")
+                current_file_path = t.file_mp3.path
+
+                from django.core.files import File
+                os.remove(current_file_path)
+                with open(filepath2, 'rb') as f:
+                    file_obj = File(f)
+                    t.file_mp3.save('new_file_name.mp3', file_obj, save=True)
+
+                # from django.core.files.storage import default_storage
+                # from django.core.files.base import ContentFile
+
+                # my_object = MyModel.objects.get(pk=1)
+                # old_file = my_object.my_file_field
+                # new_file = ContentFile("new file content")
+                # filename = default_storage.save(old_file.name, new_file)
+                # my_object.my_file_field = filename
+                # my_object.save()
+                # https: // stacktuts.com / how - to - replace - overwrite - update - change - a - file - of - filefield - in -django
+
+
+                # obj.save()
+                # from django.core.files import File
                 #
-                # )
-                request.user.file_mp3 = sound.export(filepath2, format="mp3")
-                request.user.file_mp3
-                # if os.path.isfile(filepath1) and os.path.isfile(filepath2):
-                #     AudioSegment.from_wav('filepath1').export('filepath2', format="mp3")
+                # obj.file_mp3.save("11.mp3", File(open(filepath1, "rb")))
+                queryset.update({f'{t.file_mp3}': f'{sound.export(filepath2, format="mp3")}'})
+                # y = CustomUser.objects.filter(pk=request.user.pk)
+                # if request.POST and form.is_valid():
+                #     obj = form.save(commit=False)
+                #     obj.y = obj.t
+                    # obj.profile_user = CustomUser.objects.get(pk=request.user.pk)
+                    # obj.save()
+                    # return redirect()
+                return render(request, 'spa_table/users.html', queryset)
+
+                # profile_user = CustomUser.objects.filter(pk=request.user.pk)
+                # customuser = CustomUser.objects.get(pk=request.user.pk)
+                # with open(f'{filepath2}1', 'xb') as f:
+                #     content = File(f)
+                #
+                # if form.is_valid():
+                #     form.save()
+                #     print('ssssssssssssssssssssssssss')
+                #     return HttpResponseRedirect('spa_table:tz2')
                 # else:
-                #     print(f"{filepath1} is not a file.")
-                # try:
-                #     AudioSegment.from_wav(filepath1).export(filepath2, format="mp3")
-                #
-                # except IsADirectoryError:
-                #     print(f"{filepath3} is a directory, not a file.")
-                # except IsADirectoryError:
-                #     print(f"{filepath2} is a directory, not a file.")
+                #     form = CustomUserForm()
+                #     return render(request, 'spa_table/users.html', {'form': form})
+                # t.save()
+                # print('[[[[[[[[[[[[[[[[[[[[[[', request.user.file_mp3)
+                # return HttpResponse(redirect('spa_table:tz2'), queryset)
 
+                # with open(filepath1, 'xb') as f:
+                #     content = File(f)
+                # media / musics / sample - 3s.wav
+                ##########################################
+                # with open(f'{filepath2}1', 'xb') as f:
+                #     content = File(f)
+                #     t.file_mp3.save(filepath2, content, save=False)
+            ######################################33
 
+            # t.save()
+            # t.create(
+            #     file_mp3=sound.export(filepath2, format="mp3"
+            # ))
+            # t.file_mp3=
+            # t.save()
+            # value = CustomUser.objects.create(
+            # )
+            # qwert123asd
+            #                 path = Path(filepath2)
+            #                 t = CustomUser.objects.get(pk=request.user.pk)
+            #                 with path.open(mode='rb') as f:
+            #                     content = File(f)
+            #                     t.file_wav = request.user.file_wav
+            #                     t.file_wav.save(filepath2)
+            #                     t.save(filepath2, content, save=False)
 
-                # if os.path.isfile(filepath1):
-                #     AudioSegment.from_wav(filepath1).export(filepath2, format="mp3")
-                #
-                #
-                # else:
-                #     print(f"{filepath1} is not a file.")
-                # AudioSegment.from_wav(f'media/{request.user.file_wav}').export(f'media/{request.user.file_mp3}', format="mp3")
-                print('[[[[[[[[[[[[[[[[[[[[[[', request.user.file_mp3)
+            # content = File(f)
+            # mp3.id = id
+            # mp3.data.save("your_file_name.mp3", content, save=False)
+            # mp3.save()
+
+            # from pathlib import Path
+            # >> > from django.core.files import File
+            # >> > path = Path("/some/external/specs.pdf")
+            # >> > car = Car.objects.get(name="57 Chevy")
+            # >> > with path.open(mode="rb") as f:
+            #     ...
+            #     car.specs = File(f, name=path.name)
+            # ...
+            # car.save()
+
+            # request.user.file_mp3
+
+            # t = TemperatureData.objects.get(id=1)
+            # t.value = 999
+            # t.save(['value'])
+            # from django.core.files import File
+            #
+
+            # if os.path.isfile(filepath1) and os.path.isfile(filepath2):
+            #     AudioSegment.from_wav('filepath1').export('filepath2', format="mp3")
+            # else:
+            #     print(f"{filepath1} is not a file.")
+            # try:
+            #     AudioSegment.from_wav(filepath1).export(filepath2, format="mp3")
+            #
+            # except IsADirectoryError:
+            #     print(f"{filepath3} is a directory, not a file.")
+            # except IsADirectoryError:
+            #     print(f"{filepath2} is a directory, not a file.")
+
+            # if os.path.isfile(filepath1):
+            #     AudioSegment.from_wav(filepath1).export(filepath2, format="mp3")
+            #
+            #
+            # else:
+            #     print(f"{filepath1} is not a file.")
+            # AudioSegment.from_wav(f'media/{request.user.file_wav}').export(f'media/{request.user.file_mp3}', format="mp3")
+            # print('[[[[[[[[[[[[[[[[[[[[[[', request.user.file_mp3)
+            # return HttpResponse(redirect('spa_table:tz2'), queryset)
             print('Загрузите аудиофайл формата wav')
-        return render(request, 'spa_table/users.html', queryset)
+        # return render(request, 'spa_table/users.html', {'form': form})
     return redirect('spa_table:login')  # print('Get auth')
     # if request.method == 'POST':
 

@@ -1,4 +1,6 @@
 import uuid as uuid
+
+import pydub
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
@@ -58,6 +60,34 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):  # ):
     token = models.CharField(null=True, blank=True, max_length=150)
     file_wav = models.FileField(upload_to='musics', **NULLABLE)
     file_mp3 = models.FileField(upload_to='musics', **NULLABLE)
+    def change_audio(self):
+        filepath1 = f'media/{self.user.file_wav}'
+        filepath2 = f'media/{self.user.pk}.mp3'
+        sound = pydub.AudioSegment.from_wav(filepath1)
+        self.file_mp3 = sound.export(filepath2, format="mp3")
+        print('yyyyyyyyyyyyyyyyyyyyyyyyyyy', filepath1, filepath2)
+        return self.file_mp3
+
+        # queryset = {'object_list': CustomUser.objects.all}
+        # if request.user.is_authenticated:
+        #     if request.user.file_wav:
+        #         if str(request.user.file_wav).endswith('.wav') is True:
+        #             # print('66666666666666666666666666', request.user.file_wav)
+        #             # print('55555555555555555555555555', request.user.file_mp3)
+        #             # AudioSegment.from_wav(os.path.basename(request.user.file_wav)).export(os.path.basename(request.user.file_mp3),
+        #             #                                                                format="mp3")
+        #              # media/musics/sample-3s.wav
+                    # AudioSegment.from_wav(f'{filepath1}').export(f'{filepath2}', format="mp3")
+                    # form = CustomUserForm(request.POST, request.FILES or None, )
+                    # obj = CustomUser.objects.get(pk=request.user.pk)
+
+                    # t.file_mp3 = sound.export(filepath2, format="mp3")
+                    # obj.save()
+                    # from django.core.files import File
+                    #
+                    # obj.file_mp3.save("11.mp3", File(open(filepath1, "rb")))
+                    # queryset.update({f'{t.file_mp3}': f'{sound.export(filepath2, format="mp3")}'})
+                    # y = CustomUser.objects.filter(pk=request.user.pk)
 
 #<audio src="{{ song.file.url }}" autoplay></audio>
     # created_by = models.ForeignKey('CustomUser',
