@@ -383,16 +383,16 @@ class RregisterView(CreateAPIView):
         return user
 
 
-# def generate_values():
-#     for i in range(1, 10):
-#         values = Values_table.objects.create(
-#             name=names.get_last_name(),
-#             quantity=randint(1, 100),
-#             distance=randint(1, 100),
-#         )
-#         values.save()
-#         queryset = Values_table.objects.all()
-#         return queryset
+def generate_values():
+    for i in range(1, 10):
+        values = Values_table.objects.create(
+            name=names.get_last_name(),
+            quantity=randint(1, 100),
+            distance=randint(1, 100),
+        )
+        values.save()
+        queryset = Values_table.objects.all()
+        return queryset
 
 
 from django_tables2 import tables
@@ -434,13 +434,8 @@ class TableListView(SingleTableView):
                 queryset = queryset.order_by(*ordering)
         Values_table.objects.all().delete()
 
-        for i in range(1, 5):
-            values = Values_table.objects.create(
-                name=names.get_last_name(),
-                quantity=randint(1, 100),
-                distance=randint(1, 100), )
-            values.save()
-        queryset = Values_table.objects.all()
+        for i in range(1, 10):
+            generate_values()
 
         return queryset
 
@@ -557,10 +552,12 @@ def tz3_users(request):
 
 # https://stacktuts.com/how-to-replace-overwrite-update-change-a-file-of-filefield-in-django
 def change_audio(request):
-    filepath1 = f'media/{request.user.file_wav}'
-    filepath2 = f'media/{request.user.pk}.mp3'
-    queryset = {'object_list': CustomUser.objects.all}
     if request.user.is_authenticated:
+
+        filepath1 = f'media/{request.user.file_wav}'
+        filepath2 = f'media/{request.user.pk}.mp3'
+        queryset = {'object_list': CustomUser.objects.all}
+
         if request.user.file_wav:
             if str(request.user.file_wav).endswith('.wav') is True:
                 t = CustomUser.objects.get(pk=request.user.pk)
@@ -593,7 +590,8 @@ def change_audio(request):
                 return render(request, 'spa_table/users.html', queryset)
             print('Загрузите аудиофайл формата wav')
 
-    return redirect('spa_table:login')
+    else:
+        return redirect('spa_table:login')
 
 # Добавление аудиозаписи, POST:
 # Принимает на вход запросы, содержащие уникальный идентификатор пользователя, токен доступа и аудиозапись в формате wav;
