@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="postgres@localhost" uuid="6ff431e0-a1b6-42ce-bde4-026bf05559ba">
+    <data-source source="LOCAL" name="spa_tabl@localhost" uuid="6ff431e0-a1b6-42ce-bde4-026bf05559ba">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://localhost:5432/postgres</jdbc-url>
+      <jdbc-url>jdbc:postgresql://localhost:5432/spa_tabl</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
-    <data-source source="LOCAL" name="spa_tabl@localhost" uuid="a44f0873-253a-4faa-a604-9b192e1864f8">
+    <data-source source="LOCAL" name="spa_tabl@localhost [2]" uuid="431ca162-d4c6-4604-b177-3d6754ad90ef">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>

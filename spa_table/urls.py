@@ -51,5 +51,4 @@ urlpatterns = [
     # path('simple/reset/', simple_reset_password, name='simple_reset'),
     #
     # path('profile/', UserProfileView.as_view(), name='profile')
-
 ]
