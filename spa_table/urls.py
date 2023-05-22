@@ -18,8 +18,8 @@ urlpatterns = [
     path('api/v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/v1/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
-    path('register/', RegisterView.as_view(), name='register'),
-    path('register2/', views.sign_up, name='register2'),
+    # path('register/', RegisterView.as_view(), name='register'),
+    path('register/', views.sign_up, name='register'),
     # path('register_w_token/', views.RegisterView, name='register_w_token'),
     path('signup/', SignupAPIView.as_view(), name='signup'),
     # path('login/', LoginView.as_view(template_name='spa_table/login.html'), name='login'),# {'template_name': 'login.html'}),#template_name='login.html'
