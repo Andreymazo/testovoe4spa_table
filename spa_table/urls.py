@@ -6,7 +6,7 @@ from rest_auth.views import LoginView
 from spa_table import views
 from spa_table.apps import SpaTableConfig
 from spa_table.views import render_api_question, \
-    TableListView, CustomUserLogin, CustomAuthToken, tz3_users, change_audio
+    TableListView, CustomUserLogin, CustomAuthToken, tz3_users, change_audio, search  # , filter_js
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
 # TableListView, RregisterView, CustomAuthToken,CustomPasswordResetView, change_audio,SignupAPIView,
@@ -23,6 +23,7 @@ urlpatterns = [
     path('register/', views.sign_up, name='register'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('', TableListView.as_view(), name='tz1'),
+    path('tz1_1/', search, name='tz1_1'),
     path('tz1/', TableListView.as_view(), name='tz1'),
     path('tz2/', render_api_question, name='tz2'),
     path('tz3/', tz3_users, name='tz3'),

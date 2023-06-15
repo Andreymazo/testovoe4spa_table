@@ -5,16 +5,19 @@ import names
 from django.contrib import messages
 from django.contrib.auth.views import LoginView
 from django.core.exceptions import ImproperlyConfigured
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models import QuerySet
 from django.shortcuts import render, redirect
+from django.views.generic import ListView
 
 from django_tables2 import SingleTableView
+
+from spa_table.filters import Values_tableFilter
 from spa_table.forms import SigninForm, RegisterForm
 from spa_table.models import Question, Values_table, Values_tableTable, \
     CustomUser
 from random import randint
-
 
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
@@ -35,7 +38,6 @@ class CustomAuthToken(ObtainAuthToken):  ## Без этой функции ДР�
             'user_id': user.pk,
             'email': user.email
         })
-
 
 
 from django.contrib.auth import authenticate, login
@@ -125,6 +127,44 @@ class TableListView(SingleTableView):
 
         return queryset
 
+
+def search(request):
+    # for i in range(1, 10):
+    #     generate_values()
+
+    queryset1 = Values_table.objects.all()
+    # https://simpleisbetterthancomplex.com/tutorial/2016/08/03/how-to-paginate-with-django.html
+    ############################################
+    Values_table_filter = Values_tableFilter(request.GET, queryset=queryset1)
+    # https: // django.fun / ru / articles / tutorials / filtraciya - i - razbienie - na - stranicy - s - django /
+    # https://django.how/views/pagination-with-django - filter - package /
+
+    paginator = Paginator(Values_table_filter.qs, 3)
+    page = request.GET.get('page', 1)
+    try:
+        values = paginator.page(page)
+    except PageNotAnInteger:
+        values = paginator.page(1)
+    except EmptyPage:
+        values = paginator.page(paginator.num_pages)
+
+    return render(request, 'spa_table/Values_table_list_js.html', {'values': values,
+                                                                   'filter1': Values_table_filter})
+
+    # class filter_js(ListView):
+    # template_name = "spa_table/Values_table_list_js.html"
+
+
+
+
+# from django.contrib.auth.models import User
+# from django.shortcuts import render
+# from .filters import UserFilter
+#
+# def search(request):
+#     user_list = User.objects.all()
+#     user_filter = UserFilter(request.GET, queryset=user_list)
+#     return render(request, 'search/user_list.html', {'filter': user_filter})
 
 from django import forms
 

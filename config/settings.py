@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     'rest_auth.registration',
     'rest_framework_simplejwt',
     'spa_table',
-
+    'django_filters',
 
 ]
 SITE_ID = 1
@@ -201,7 +201,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'spa_table.CustomUser'
 LOGIN_REDIRECT_URL = '/tz2/'
-LOGOUT_REDIRECT_URL = 'spa_table:tz2'
+LOGOUT_REDIRECT_URL = 'spa_table:login'
 LOGIN_URL = 'login/'  # http://localhost:8000/login
 SIMPLE_BACKEND_REDIRECT_URL = 'spa_table:tz2'
 

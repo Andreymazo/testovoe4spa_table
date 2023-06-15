@@ -1,0 +1,64 @@
+{% load my_tags %}
+ <body>
+    {% include 'spa_table/includes/main_menu.html' %}
+
+{% block content %}
+{{values.1.name}}
+
+  <form method="get">
+    {{ filter1.form.as_p }}
+    <input type="submit" />
+<!--    <button type="submit">Search</button>-->
+
+  </form>
+  <ul>
+
+      <table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Data</th>
+      <th>Distance</th>
+      <th>Name</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for obj in values%}
+      <tr>
+        <td>{{ obj.data  }}</td>
+        <td>{{ obj.distance  }}</td>
+        <td>{{  obj.name  }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% if values.has_other_pages %}
+  <ul class="pagination">
+    {% if values.has_previous %}
+      <li><a href="?page={{ values.previous_page_number }}">&laquo;</a></li>
+    {% else %}
+      <li class="disabled"><span>&laquo;</span></li>
+    {% endif %}
+    {% for i in values.paginator.page_range %}
+      {% if values.number == i %}
+        <li class="active"><span>{{ i }} <span class="sr-only">(current)
+        </span></span></li>
+      {% else %}
+        <li><a href="?page={{ i }}">{{ i }}</a></li>
+      {% endif %}
+    {% endfor %}
+    {% if values.has_next %}
+      <li><a href="?page={{ values.next_page_number }}">&raquo;</a></li>
+    {% else %}
+      <li class="disabled"><span>&raquo;</span></li>
+    {% endif %}
+  </ul>
+{% endif %}
+  {% for obj in filter1.qs %}
+    <li>{{ obj.data }} {{ obj.distance }} {{ obj.name }}</li>
+  {% endfor %}
+  </ul>
+
+{% endblock %}
+
+ </body>
+ <a class="btn btn-outline-light w-50" href="{% url 'spa_table:tz1' %}"> REFRESSH</a>
